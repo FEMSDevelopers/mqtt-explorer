@@ -1,0 +1,69 @@
+name: Auto Release
+
+on:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine next version
+        id: version
+        run: |
+          # Get the latest release tag (vX.Y.Z format)
+          LATEST_TAG=$(git tag --sort=-v:refname --list 'v*' | head -n 1)
+
+          if [ -z "$LATEST_TAG" ]; then
+            # No existing tags — start from package.json version
+            NEXT_VERSION="0.4.1"
+          else
+            # Strip leading 'v'
+            VERSION="${LATEST_TAG#v}"
+
+            # Split into major.minor.patch
+            IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+
+            # Increment patch
+            PATCH=$((PATCH + 1))
+
+            NEXT_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+          fi
+
+          echo "version=${NEXT_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=v${NEXT_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Next version: v${NEXT_VERSION}"
+
+      - name: Create tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "${{ steps.version.outputs.tag }}"
+          git push origin "${{ steps.version.outputs.tag }}"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Get commit messages since the last release tag
+          LATEST_TAG=$(git tag --sort=-v:refname --list 'v*' | sed -n '2p')
+
+          if [ -z "$LATEST_TAG" ]; then
+            NOTES=$(git log --pretty=format:"- %s (%h)" -20)
+          else
+            NOTES=$(git log --pretty=format:"- %s (%h)" "${LATEST_TAG}..HEAD")
+          fi
+
+          gh release create "${{ steps.version.outputs.tag }}" \
+            --title "Release ${{ steps.version.outputs.tag }}" \
+            --notes "$NOTES" \
+            --latest
