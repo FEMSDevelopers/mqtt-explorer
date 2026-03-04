@@ -3,13 +3,16 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as dotProp from 'dot-prop'
 
+// Allow overriding the publish mode via environment variable (e.g. PUBLISH=never)
+const publishMode = (process.env.PUBLISH as builder.PublishOptions['publish']) || 'always'
+
 const linuxAppImage: builder.CliOptions = {
   x64: true,
   ia32: false,
   armv7l: true,
   arm64: true,
   projectDir: './build/clean',
-  publish: 'always',
+  publish: publishMode,
 }
 
 const linuxSnap: builder.CliOptions = {
@@ -18,7 +21,7 @@ const linuxSnap: builder.CliOptions = {
   armv7l: false, // not supported to build on x64
   arm64: false, // not supported to build on x64
   projectDir: './build/clean',
-  publish: 'always',
+  publish: publishMode,
 }
 
 const linuxDeb: builder.CliOptions = {
@@ -27,7 +30,7 @@ const linuxDeb: builder.CliOptions = {
   armv7l: true,
   arm64: true,
   projectDir: './build/clean',
-  publish: 'always',
+  publish: publishMode,
 }
 
 const winPortable: builder.CliOptions = {
@@ -36,7 +39,7 @@ const winPortable: builder.CliOptions = {
   armv7l: false,
   arm64: false,
   projectDir: './build/clean',
-  publish: 'always',
+  publish: publishMode,
 }
 
 const winNsis: builder.CliOptions = {
@@ -45,7 +48,7 @@ const winNsis: builder.CliOptions = {
   armv7l: false,
   arm64: false,
   projectDir: './build/clean',
-  publish: 'always',
+  publish: publishMode,
 }
 
 const winAppx: builder.CliOptions = {
@@ -54,7 +57,7 @@ const winAppx: builder.CliOptions = {
   armv7l: false,
   arm64: false,
   projectDir: './build/clean',
-  publish: 'onTag',
+  publish: process.env.PUBLISH ? publishMode : 'onTag',
 }
 
 const mac: builder.CliOptions = {
@@ -63,7 +66,7 @@ const mac: builder.CliOptions = {
   armv7l: false,
   arm64: true,
   projectDir: './build/clean',
-  publish: 'always',
+  publish: publishMode,
 }
 
 async function executeBuild() {

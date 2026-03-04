@@ -86,6 +86,19 @@ jobs:
       - name: Install yarn
         run: npm install -g yarn
 
+      - name: Set release version in package.json
+        shell: bash
+        run: |
+          VERSION="${{ needs.version.outputs.version }}"
+          # Update version in root package.json
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            pkg.version = '${VERSION}';
+            fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+          "
+          echo "Set package.json version to ${VERSION}"
+
       - name: Install dependencies
         run: yarn
 
@@ -98,7 +111,7 @@ jobs:
       - name: Package Windows exe
         run: yarn package win
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PUBLISH: never
 
       - name: Upload exe to release
         env:
