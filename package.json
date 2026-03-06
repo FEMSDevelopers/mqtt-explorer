@@ -82,12 +82,12 @@
       "showNameOnTiles": true
     },
     "win": {
-      "icon": "res/icon.png"
+      "icon": "res/icon.ico"
     },
     "extraResources": [
       {
-        "from": "res/icon.png",
-        "to": "icon.png"
+        "from": "res/icon.ico",
+        "to": "icon.ico"
       }
     ],
     "directories": {

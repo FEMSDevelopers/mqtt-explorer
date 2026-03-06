@@ -4,8 +4,8 @@ import * as path from 'path'
 import { isDev } from './development'
 
 const iconPath = isDev()
-  ? path.join(__dirname, '..', '..', 'res', 'icon.png')
-  : path.join(process.resourcesPath, 'icon.png')
+  ? path.join(__dirname, '..', '..', 'res', 'icon.ico')
+  : path.join(process.resourcesPath, 'icon.ico')
 
 const applicationMenu: MenuItemConstructorOptions = {
   label: 'Application',
