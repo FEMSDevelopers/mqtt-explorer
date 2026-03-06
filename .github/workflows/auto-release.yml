@@ -86,19 +86,6 @@ jobs:
       - name: Install yarn
         run: npm install -g yarn
 
-      - name: Set release version in package.json
-        shell: bash
-        run: |
-          VERSION="${{ needs.version.outputs.version }}"
-          # Update version in root package.json
-          node -e "
-            const fs = require('fs');
-            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-            pkg.version = '${VERSION}';
-            fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
-          "
-          echo "Set package.json version to ${VERSION}"
-
       - name: Install dependencies
         run: yarn
 
@@ -107,6 +94,19 @@ jobs:
 
       - name: Prepare release
         run: yarn prepare-release
+
+      - name: Set release version in build
+        shell: bash
+        run: |
+          VERSION="${{ needs.version.outputs.version }}"
+          # Update version in build/clean/package.json (used by electron-builder)
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('build/clean/package.json', 'utf8'));
+            pkg.version = '${VERSION}';
+            fs.writeFileSync('build/clean/package.json', JSON.stringify(pkg, null, 2) + '\n');
+          "
+          echo "Set build/clean/package.json version to ${VERSION}"
 
       - name: Package Windows exe
         run: yarn package win
