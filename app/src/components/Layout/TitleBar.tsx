@@ -54,7 +54,7 @@ const styles = (theme: Theme) => ({
     },
   },
   disconnectLabel: {
-    color: theme.palette.primary.contrastText,
+    color: 'inherit',
   },
 })
 
@@ -111,7 +111,7 @@ class TitleBar extends React.PureComponent<Props, {}> {
           <PauseButton />
           <Button
             className={classes.disconnect}
-            sx={{ color: 'primary.contrastText' }}
+            color="inherit"
             onClick={actions.connection.disconnect}
             data-testid="disconnect-button"
           >
@@ -134,7 +134,7 @@ function LogoutButton({ classes, onLogout }: { classes: any; onLogout: () => voi
   }
 
   return (
-    <Button className={classes.logout} sx={{ color: 'primary.contrastText' }} onClick={onLogout}>
+    <Button className={classes.logout} color="inherit" onClick={onLogout}>
       Logout <Logout className={classes.disconnectIcon} />
     </Button>
   )

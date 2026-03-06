@@ -25,7 +25,7 @@ const styles = (theme: Theme) => ({
       .join('),'),
     padding: '6px',
     borderRadius: '50%',
-    backgroundColor: '#eee',
+    backgroundColor: theme.palette.background.paper,
     width: '35px',
     height: '35px',
   },

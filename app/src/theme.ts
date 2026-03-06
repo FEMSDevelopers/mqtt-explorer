@@ -16,6 +16,16 @@ const darkTheme = createTheme({
   ...(baseTheme as any),
   palette: {
     mode: 'dark',
+    primary: {
+      main: '#7e57c2',
+      light: '#b085f5',
+      dark: '#4d2c91',
+    },
+    secondary: amber,
+    background: {
+      default: '#1a1a2e',
+      paper: '#252542',
+    },
   },
 })
 
