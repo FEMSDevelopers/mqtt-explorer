@@ -8,11 +8,14 @@ import { AppState } from '../reducers'
 import { globalActions } from '.'
 import { resetStore as resetTreeStore, showTree } from './Tree'
 import { showError } from './Global'
+import { updateConnection, saveConnectionSettings } from './ConnectionManager'
 import { TopicViewModel } from '../model/TopicViewModel'
 import { addMqttConnectionEvent, makeConnectionStateEvent, removeConnection, rendererEvents } from '../eventBus'
 
 export const connect =
   (options: MqttOptions, connectionId: string) => (dispatch: Dispatch<any>, getState: () => AppState) => {
+    dispatch(updateConnection(connectionId, { lastUsed: Date.now() }))
+    dispatch(saveConnectionSettings() as any)
     dispatch(connecting(connectionId))
     rendererEvents.emit(addMqttConnectionEvent, { options, id: connectionId })
     const event = makeConnectionStateEvent(connectionId)

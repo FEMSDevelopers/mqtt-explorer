@@ -42,6 +42,7 @@ function ConnectionItem(props: Props) {
     <ListItem
       button
       selected={props.selected}
+      className={props.selected ? props.classes.selectedItem : undefined}
       style={{ display: 'flex', alignItems: 'center' }}
       onClick={() => props.actions.connectionManager.selectConnection(props.connection.id)}
       onDoubleClick={() => {
@@ -76,6 +77,12 @@ export const mapDispatchToProps = (dispatch: any) => ({
   },
 })
 export const connectionItemStyle = (theme: Theme) => ({
+  selectedItem: {
+    backgroundColor: `${theme.palette.action.selected} !important`,
+    '&:hover': {
+      backgroundColor: `${theme.palette.action.selected} !important`,
+    },
+  },
   name: {
     width: '100%',
     textOverflow: 'ellipsis' as const,

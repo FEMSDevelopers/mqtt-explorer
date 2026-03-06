@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react'
 import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
-import { IconButton, InputAdornment, List, TextField, Tooltip } from '@mui/material'
+import { Divider, IconButton, InputAdornment, List, ListSubheader, TextField, Tooltip } from '@mui/material'
 import { Theme } from '@mui/material/styles'
 import { withStyles } from '@mui/styles'
 import FileUpload from '@mui/icons-material/FileUpload'
@@ -18,6 +18,8 @@ import { useGlobalKeyEventHandler } from '../../../effects/useGlobalKeyEventHand
 
 const ConnectionItemAny = ConnectionItem as any
 
+const RECENT_COUNT = 3
+
 interface Props {
   classes: any
   selected?: string
@@ -25,35 +27,67 @@ interface Props {
   actions: typeof connectionManagerActions
 }
 
+function sortAlphabetically(a: ConnectionOptions, b: ConnectionOptions) {
+  return (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' })
+}
+
 function ProfileList(props: Props) {
   const { actions, classes, connections, selected } = props
   const [searchQuery, setSearchQuery] = useState('')
 
-  const sortedConnections = useMemo(() => {
-    const allConnections = Object.values(connections).sort((a, b) => {
-      const aFav = a.favorite ? 1 : 0
-      const bFav = b.favorite ? 1 : 0
-      if (aFav !== bFav) return bFav - aFav
-      return (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' })
-    })
+  const isSearching = searchQuery.trim().length > 0
 
-    if (!searchQuery.trim()) return allConnections
+  // Compute sections: favorites, recent, all
+  const { favorites, recent, allConnections, flatList } = useMemo(() => {
+    const connectionList = Object.values(connections)
 
-    const query = searchQuery.toLowerCase()
-    return allConnections.filter(
-      c =>
-        (c.name || '').toLowerCase().includes(query) ||
-        (c.host || '').toLowerCase().includes(query)
-    )
-  }, [connections, searchQuery])
+    // When searching, return a flat filtered list (no sections)
+    if (isSearching) {
+      const query = searchQuery.toLowerCase()
+      const filtered = connectionList
+        .filter(
+          c =>
+            (c.name || '').toLowerCase().includes(query) ||
+            (c.host || '').toLowerCase().includes(query)
+        )
+        .sort((a, b) => {
+          const aFav = a.favorite ? 1 : 0
+          const bFav = b.favorite ? 1 : 0
+          if (aFav !== bFav) return bFav - aFav
+          return sortAlphabetically(a, b)
+        })
+      return { favorites: [], recent: [], allConnections: [], flatList: filtered }
+    }
+
+    // Favorites: connections with favorite flag, sorted alphabetically
+    const favs = connectionList.filter(c => c.favorite).sort(sortAlphabetically)
+    const favIds = new Set(favs.map(c => c.id))
+
+    // Recent: top 3 most recently used connections (excluding favorites), sorted by most recent
+    const recentCandidates = connectionList
+      .filter(c => !favIds.has(c.id) && c.lastUsed)
+      .sort((a, b) => (b.lastUsed || 0) - (a.lastUsed || 0))
+      .slice(0, RECENT_COUNT)
+    const recentIds = new Set(recentCandidates.map(c => c.id))
+
+    // All: remaining connections sorted alphabetically (excluding favorites and recent)
+    const rest = connectionList
+      .filter(c => !favIds.has(c.id) && !recentIds.has(c.id))
+      .sort(sortAlphabetically)
+
+    // Flat list for keyboard navigation (in display order)
+    const flat = [...favs, ...recentCandidates, ...rest]
+
+    return { favorites: favs, recent: recentCandidates, allConnections: rest, flatList: flat }
+  }, [connections, searchQuery, isSearching])
 
   const selectConnection = (dir: 'next' | 'previous') => (event: KeyboardEvent) => {
     if (!selected) {
       return
     }
     const indexDirection = dir === 'next' ? 1 : -1
-    const selectedIndex = sortedConnections.map(connection => connection.id).indexOf(selected)
-    const nextConnection = sortedConnections[selectedIndex + indexDirection]
+    const selectedIndex = flatList.map(connection => connection.id).indexOf(selected)
+    const nextConnection = flatList[selectedIndex + indexDirection]
     if (nextConnection) {
       actions.selectConnection(nextConnection.id)
     }
@@ -79,6 +113,47 @@ function ProfileList(props: Props) {
       </Tooltip>
     </div>
   )
+
+  function renderConnectionItem(connection: ConnectionOptions) {
+    return <ConnectionItemAny connection={connection} key={connection.id} selected={selected === connection.id} />
+  }
+
+  function renderSections() {
+    // When searching, show flat filtered results
+    if (isSearching) {
+      return flatList.map(renderConnectionItem)
+    }
+
+    // No sections needed if there are no favorites and no recent
+    if (favorites.length === 0 && recent.length === 0) {
+      return allConnections.map(renderConnectionItem)
+    }
+
+    return (
+      <>
+        {favorites.length > 0 && (
+          <>
+            <ListSubheader className={classes.sectionHeader}>Favorites</ListSubheader>
+            {favorites.map(renderConnectionItem)}
+            <Divider className={classes.sectionDivider} />
+          </>
+        )}
+        {recent.length > 0 && (
+          <>
+            <ListSubheader className={classes.sectionHeader}>Recent</ListSubheader>
+            {recent.map(renderConnectionItem)}
+            <Divider className={classes.sectionDivider} />
+          </>
+        )}
+        {allConnections.length > 0 && (
+          <>
+            <ListSubheader className={classes.sectionHeader}>All</ListSubheader>
+            {allConnections.map(renderConnectionItem)}
+          </>
+        )}
+      </>
+    )
+  }
 
   return (
     <List style={{ height: '100%', display: 'flex', flexDirection: 'column' }} component="nav" subheader={createConnectionButton}>
@@ -107,9 +182,7 @@ function ProfileList(props: Props) {
         />
       </div>
       <div className={classes.list}>
-        {sortedConnections.map(connection => (
-          <ConnectionItemAny connection={connection} key={connection.id} selected={selected === connection.id} />
-        ))}
+        {renderSections()}
       </div>
     </List>
   )
@@ -119,6 +192,19 @@ const styles = (theme: Theme) => ({
   list: {
     flex: 1,
     overflowY: 'auto' as const,
+  },
+  sectionHeader: {
+    lineHeight: '32px',
+    fontSize: '0.75rem',
+    fontWeight: 600,
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.5px',
+    color: theme.palette.text.secondary,
+    backgroundColor: theme.palette.background.paper,
+    paddingLeft: '16px',
+  },
+  sectionDivider: {
+    margin: '4px 16px',
   },
 })
 

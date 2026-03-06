@@ -28,6 +28,7 @@ export interface ConnectionOptions {
   clientId?: string
   subscriptions: Array<Subscription>
   favorite?: boolean
+  lastUsed?: number
 }
 
 export function toMqttConnection(options: ConnectionOptions): MqttOptions | undefined {
