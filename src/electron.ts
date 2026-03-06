@@ -92,11 +92,11 @@ async function createWindow() {
     loadDevTools()
   }
 
-  // In dev, icon is at res/icon.png relative to project root
+  // In dev, icon is at res/icon.ico relative to project root
   // In production, extraResources copies it to the resources/ directory
   const iconPath = isDev()
-    ? path.join(__dirname, '..', '..', 'res', 'icon.png')
-    : path.join(process.resourcesPath, 'icon.png')
+    ? path.join(__dirname, '..', '..', 'res', 'icon.ico')
+    : path.join(process.resourcesPath, 'icon.ico')
   // Create the browser window.
   mainWindow = new BrowserWindow({
     width: 1024,
