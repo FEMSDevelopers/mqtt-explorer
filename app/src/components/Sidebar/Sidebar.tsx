@@ -24,8 +24,8 @@ interface Props {
   connectionId?: string
 }
 
-function useUpdateNodeWhenNodeReceivesUpdates(node?: q.TreeNode<any>) {
-  const [, setLastUpdate] = useState(0)
+function useUpdateNodeWhenNodeReceivesUpdates(node?: q.TreeNode<any>): number {
+  const [lastUpdate, setLastUpdate] = useState(0)
   const updateNode = useCallback(
     throttle(() => {
       setLastUpdate(node ? node.lastUpdate : 0)
@@ -43,12 +43,14 @@ function useUpdateNodeWhenNodeReceivesUpdates(node?: q.TreeNode<any>) {
       node && node.onMessage.unsubscribe(updateCallback)
     }
   }, [node])
+
+  return lastUpdate
 }
 
 function SidebarNew(props: Props) {
   const { classes, tree, nodePath } = props
   const node = usePollingToFetchTreeNode(tree, nodePath || '')
-  useUpdateNodeWhenNodeReceivesUpdates(node)
+  const nodeLastUpdate = useUpdateNodeWhenNodeReceivesUpdates(node)
   const [tabValue, setTabValue] = useState(0)
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
@@ -63,7 +65,7 @@ function SidebarNew(props: Props) {
     return (
       <div id="Sidebar" className={classes.root}>
         <Box className={classes.mobileContent}>
-          <DetailsTab node={node} connectionId={props.connectionId} />
+          <DetailsTab node={node} connectionId={props.connectionId} lastUpdate={nodeLastUpdate} />
         </Box>
       </div>
     )
@@ -88,7 +90,7 @@ function SidebarNew(props: Props) {
 
       <Box className={classes.tabContent}>
         <Box sx={{ display: tabValue === 0 ? 'block' : 'none' }}>
-          <DetailsTab node={node} connectionId={props.connectionId} />
+          <DetailsTab node={node} connectionId={props.connectionId} lastUpdate={nodeLastUpdate} />
         </Box>
         <Box sx={{ display: tabValue === 1 ? 'block' : 'none' }}>
           <PublishTab connectionId={props.connectionId} />

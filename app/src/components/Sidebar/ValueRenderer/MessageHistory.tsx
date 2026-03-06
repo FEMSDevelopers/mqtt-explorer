@@ -30,7 +30,7 @@ export const MessageHistory: React.FC<Props> = props => {
   const [, setLastUpdate] = React.useState(Date.now())
   const updateNodeThrottled = React.useCallback(
     throttle(() => {
-      setLastUpdate
+      setLastUpdate(Date.now())
     }, 300),
     []
   )

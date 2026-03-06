@@ -89,14 +89,17 @@ function TreeNodeComponent(props: Props) {
     [isCollapsed]
   )
 
-  const didObtainFocus = useCallback(() => {
-    didSelectTopic()
-  }, [didSelectTopic])
-
   const mouseOver = useCallback(
     (event: React.MouseEvent) => {
       event.stopPropagation()
-      if (settings.get('selectTopicWithMouseOver') && treeNode && treeNode.message && treeNode.message.payload) {
+      // Only select on real mouse movement (movementX/Y > 0), not DOM reflow under a stationary cursor
+      if (
+        settings.get('selectTopicWithMouseOver') &&
+        (event.movementX !== 0 || event.movementY !== 0) &&
+        treeNode &&
+        treeNode.message &&
+        treeNode.message.payload
+      ) {
         didSelectTopic()
       }
     },
@@ -131,8 +134,7 @@ function TreeNodeComponent(props: Props) {
           ref={nodeRef as any}
           key={treeNode.hash()}
           className={`${classes.title} ${highlightClass}`}
-          onMouseEnter={mouseOver}
-          onFocus={didObtainFocus}
+          onMouseMove={mouseOver}
           onClick={didClickTitle}
           tabIndex={-1}
           onKeyDown={deleteTopicCallback}

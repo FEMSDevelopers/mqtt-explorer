@@ -25,6 +25,7 @@ interface Props {
   classes: any
   compareMessage?: q.Message
   connectionId?: string
+  lastUpdate?: number
   sidebarActions: typeof sidebarActions
   globalActions: typeof globalActions
 }

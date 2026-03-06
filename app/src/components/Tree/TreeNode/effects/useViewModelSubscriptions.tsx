@@ -17,7 +17,7 @@ export function useViewModelSubscriptions(
     viewModel && setSelected(Boolean(selected))
 
     if (selected && nodeRef && nodeRef.current) {
-      nodeRef.current.focus({ preventScroll: false })
+      nodeRef.current.focus({ preventScroll: true })
     }
   }, [viewModel])
 
