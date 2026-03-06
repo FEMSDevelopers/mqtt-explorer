@@ -81,6 +81,15 @@
       "backgroundColor": "transparent",
       "showNameOnTiles": true
     },
+    "win": {
+      "icon": "res/icon.png"
+    },
+    "extraResources": [
+      {
+        "from": "res/icon.png",
+        "to": "icon.png"
+      }
+    ],
     "directories": {
       "app": "./",
       "buildResources": "res",

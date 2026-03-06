@@ -1,6 +1,11 @@
 import { Menu, app, BrowserWindow, webContents, MenuItemConstructorOptions, MenuItem } from 'electron'
 import openAboutWindow from 'about-window'
 import * as path from 'path'
+import { isDev } from './development'
+
+const iconPath = isDev()
+  ? path.join(__dirname, '..', '..', 'res', 'icon.png')
+  : path.join(process.resourcesPath, 'icon.png')
 
 const applicationMenu: MenuItemConstructorOptions = {
   label: 'Application',
@@ -9,7 +14,7 @@ const applicationMenu: MenuItemConstructorOptions = {
       label: 'About Application',
       click: () => {
         openAboutWindow({
-          icon_path: path.join(__dirname, '..', '..', 'icon.png'),
+          icon_path: iconPath,
           license: 'CC-BY-ND-4.0',
           homepage: 'https://thomasnordquist.github.io/MQTT-Explorer/',
           bug_report_url: 'https://github.com/thomasnordquist/MQTT-Explorer/issues',
