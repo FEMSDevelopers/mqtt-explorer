@@ -1,3 +1,5 @@
 const path = require('path')
-process.chdir(path.join(__dirname, '..', 'app'))
-require(path.join(process.cwd(), 'node_modules', 'webpack-dev-server', 'bin', 'webpack-dev-server.js'))
+const appDir = path.join(__dirname, '..', 'app')
+process.chdir(appDir)
+process.argv.push('--port', '8080')
+require(path.join(appDir, 'node_modules', 'webpack-dev-server', 'bin', 'webpack-dev-server.js'))

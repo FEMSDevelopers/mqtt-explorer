@@ -4,7 +4,7 @@
     {
       "name": "frontend",
       "runtimeExecutable": "node",
-      "runtimeArgs": [".claude/start-frontend.js", "--config", "webpack.browser.config.mjs", "--mode", "development"],
+      "runtimeArgs": [".claude/start-frontend.js", "--mode", "development"],
       "port": 8080
     },
     {

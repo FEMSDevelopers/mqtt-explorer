@@ -46,13 +46,8 @@ export class ConnectionManager {
   private handleNewMessagesForConnection(connectionId: string, connection: MqttSource) {
     const messageEvent = makeConnectionMessageEvent(connectionId)
     connection.onMessage((topic: string, payload: Buffer, packet: any) => {
-      let buffer = payload
-      if (buffer.length > 20000) {
-        buffer = buffer.slice(0, 20000)
-      }
-
       let decoded_payload = null
-      decoded_payload = Base64Message.fromBuffer(buffer)
+      decoded_payload = Base64Message.fromBuffer(payload)
 
       this.backendEvents.emit(messageEvent, {
         topic,

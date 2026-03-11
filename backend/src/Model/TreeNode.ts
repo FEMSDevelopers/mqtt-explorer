@@ -7,7 +7,7 @@ export type TopicDataType = 'string' | 'json' | 'hex'
 export class TreeNode<ViewModel extends Destroyable> {
   public sourceEdge?: Edge<ViewModel>
   public message?: Message
-  public messageHistory: MessageHistory = new RingBuffer<Message>(300_000, 10)
+  public messageHistory: MessageHistory = new RingBuffer<Message>(2_000_000, 10)
   public viewModel?: ViewModel
   public edges: { [s: string]: Edge<ViewModel> } = {}
   public edgeArray: Array<Edge<ViewModel>> = []
