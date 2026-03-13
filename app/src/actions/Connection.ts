@@ -19,7 +19,8 @@ export const connect =
     dispatch(connecting(connectionId))
     rendererEvents.emit(addMqttConnectionEvent, { options, id: connectionId })
     const event = makeConnectionStateEvent(connectionId)
-    const host = url.parse(options.url).hostname
+    const parsed = url.parse(options.url)
+    const host = parsed.port ? `${parsed.hostname}:${parsed.port}` : parsed.hostname
 
     rendererEvents.subscribe(event, dataSourceState => {
       if (dataSourceState.connected) {
