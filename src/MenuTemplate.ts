@@ -1,5 +1,4 @@
-import { Menu, app, BrowserWindow, webContents, MenuItemConstructorOptions, MenuItem } from 'electron'
-import openAboutWindow from 'about-window'
+import { Menu, app, BrowserWindow, dialog, nativeImage, MenuItemConstructorOptions } from 'electron'
 import * as path from 'path'
 import { isDev } from './development'
 
@@ -13,12 +12,18 @@ const applicationMenu: MenuItemConstructorOptions = {
     {
       label: 'About Application',
       click: () => {
-        openAboutWindow({
-          icon_path: iconPath,
-          license: 'CC-BY-ND-4.0',
-          homepage: 'https://thomasnordquist.github.io/MQTT-Explorer/',
-          bug_report_url: 'https://github.com/thomasnordquist/MQTT-Explorer/issues',
-          description: 'Author: Thomas Nordquist',
+        const version = app.getVersion()
+        dialog.showMessageBox({
+          icon: nativeImage.createFromPath(iconPath),
+          title: 'About MQTT Explorer',
+          message: `MQTT Explorer v${version}`,
+          detail: [
+            'Author: Thomas Nordquist',
+            'License: CC-BY-ND-4.0',
+            '',
+            'Homepage: https://thomasnordquist.github.io/MQTT-Explorer/',
+            'Issues: https://github.com/thomasnordquist/MQTT-Explorer/issues',
+          ].join('\n'),
         })
       },
     },
