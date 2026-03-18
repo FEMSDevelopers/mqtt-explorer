@@ -420,10 +420,23 @@ async function startServer() {
       const sanitizedFilename = sanitizeFilename(filename)
 
       // Validate data size
-      const dataBuffer = Buffer.from(data, 'base64')
+      let dataBuffer = Buffer.from(data, 'base64')
       if (dataBuffer.length > MAX_FILE_SIZE) {
         throw new Error(`Certificate size exceeds maximum allowed size of ${MAX_FILE_SIZE} bytes`)
       }
+
+      // Strip UTF-8 BOM if present (common in Windows-created cert files)
+      if (dataBuffer[0] === 0xef && dataBuffer[1] === 0xbb && dataBuffer[2] === 0xbf) {
+        dataBuffer = dataBuffer.slice(3)
+      }
+
+      // Validate PEM format
+      const pemStr = dataBuffer.toString('utf8').trimStart()
+      if (!pemStr.startsWith('-----BEGIN')) {
+        throw new Error('Invalid certificate: file does not appear to be in PEM format')
+      }
+      dataBuffer = Buffer.from(pemStr)
+      const cleanBase64 = dataBuffer.toString('base64')
 
       // Store certificate on server for browser mode
       const dataDir = path.join(process.cwd(), 'data', 'certificates')
@@ -445,7 +458,7 @@ async function startServer() {
       // Return the certificate data for client to use
       return {
         name: sanitizedFilename,
-        data,
+        data: cleanBase64,
       }
     } catch (error) {
       console.error('Error uploading certificate:', error instanceof Error ? error.message : 'Unknown error')

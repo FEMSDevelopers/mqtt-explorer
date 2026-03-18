@@ -25,6 +25,21 @@ export interface Subscription {
 
 export type QoS = 0 | 1 | 2
 
+/**
+ * Decodes a cert string that may be stored in one of two formats:
+ * 1. Correct: base64-encoded PEM bytes (e.g. "LS0tLS1CRUdJTi...")
+ * 2. Corrupted: comma-separated decimal bytes from Uint8Array.toString()
+ *    (e.g. "45,45,45,45,45,66,69,71,73,78,...") — caused by an IPC
+ *    serialization bug where Buffer was delivered as Uint8Array to the renderer.
+ */
+function decodeCertData(data: string): Buffer {
+  // Detect the corrupted comma-separated format
+  if (/^\d+(,\d+)*$/.test(data.slice(0, 64))) {
+    return Buffer.from(data.split(',').map(Number))
+  }
+  return Buffer.from(data, 'base64')
+}
+
 export class MqttSource implements DataSource<MqttOptions> {
   public stateMachine: DataSourceStateMachine = new DataSourceStateMachine()
   private client: MqttClient | undefined
@@ -54,9 +69,9 @@ export class MqttSource implements DataSource<MqttOptions> {
       password: options.password,
       clientId: options.clientId,
       servername: options.tls ? url.hostname : undefined,
-      ca: options.certificateAuthority ? Buffer.from(options.certificateAuthority, 'base64') : undefined,
-      cert: options.clientCertificate ? Buffer.from(options.clientCertificate, 'base64') : undefined,
-      key: options.clientKey ? Buffer.from(options.clientKey, 'base64') : undefined,
+      ca: options.certificateAuthority ? decodeCertData(options.certificateAuthority) : undefined,
+      cert: options.clientCertificate ? decodeCertData(options.clientCertificate) : undefined,
+      key: options.clientKey ? decodeCertData(options.clientKey) : undefined,
     } as any)
 
     this.client = client
