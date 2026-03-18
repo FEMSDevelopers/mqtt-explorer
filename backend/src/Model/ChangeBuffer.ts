@@ -8,7 +8,7 @@ interface BufferedMessage {
 export class ChangeBuffer {
   private buffer: Array<BufferedMessage> = []
   private size = 0
-  private maxSize = 100_000_000 // ~100MB
+  private maxSize = 10_000_000 // ~10MB
   public length = 0
   public estimatedMessageOverhead = 24
 
