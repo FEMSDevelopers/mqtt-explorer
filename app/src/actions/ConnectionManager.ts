@@ -85,13 +85,27 @@ async function openCertificate(): Promise<CertificateParameters> {
     throw rejectReasons.noCertificateSelected
   }
 
-  const data = await rendererRpc.call(readFromFile, { filePath: selectedFile })
-  if (data.length > 16_384 || data.length < 64) {
+  const rawData = await rendererRpc.call(readFromFile, { filePath: selectedFile })
+  // Ensure we have a proper Buffer regardless of what IPC delivers (Buffer or Uint8Array)
+  let buf = Buffer.isBuffer(rawData) ? rawData : Buffer.from(rawData as any)
+
+  // Strip UTF-8 BOM if present (common in Windows-created cert files)
+  if (buf[0] === 0xef && buf[1] === 0xbb && buf[2] === 0xbf) {
+    buf = buf.slice(3)
+  }
+
+  if (buf.length > 16_384 || buf.length < 64) {
     throw rejectReasons.certificateSizeDoesNotMatch
   }
 
+  // Validate it looks like a PEM file
+  const pemStr = buf.toString('utf8').trimStart()
+  if (!pemStr.startsWith('-----BEGIN')) {
+    throw 'Invalid certificate: file does not appear to be in PEM format. Ensure the file is a .pem or .crt file that starts with "-----BEGIN".'
+  }
+
   return {
-    data: data.toString('base64'),
+    data: Buffer.from(pemStr).toString('base64'),
     name: path.basename(selectedFile),
   }
 }
