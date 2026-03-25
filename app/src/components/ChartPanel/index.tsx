@@ -104,12 +104,10 @@ function ChartPanel(props: Props) {
 
   return (
     <div className={props.classes.container}>
-      <Grid container spacing={1}>
-        <TransitionGroup component={null} className="example">
-          {charts}
-        </TransitionGroup>
+      <TransitionGroup component={Grid} container spacing={1} className="example">
+        {charts}
         {chartsInView === 0 ? <NoCharts key="noCharts" /> : null}
-      </Grid>
+      </TransitionGroup>
     </div>
   )
 }

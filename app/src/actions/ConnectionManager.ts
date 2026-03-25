@@ -253,7 +253,9 @@ export const importConnections = () => async (dispatch: Dispatch<any>, getState:
       }
 
       const data = await rendererRpc.call(readFromFile, { filePath: selectedFile, encoding: 'utf8' })
-      jsonString = typeof data === 'string' ? data : data.toString()
+      // IPC may deliver a Uint8Array instead of Buffer; ensure proper UTF-8 decoding
+      const buf = Buffer.isBuffer(data) ? data : Buffer.from(data as any)
+      jsonString = buf.toString('utf8')
     }
 
     const importedConnections = JSON.parse(jsonString)
