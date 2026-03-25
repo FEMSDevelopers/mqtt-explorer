@@ -2,7 +2,7 @@ import * as React from 'react'
 import ShowChart from '@mui/icons-material/ShowChart'
 import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
-import { Grid, Typography } from '@mui/material'
+import { Typography } from '@mui/material'
 import { withStyles } from '@mui/styles'
 import { Theme } from '@mui/material/styles'
 import { List } from 'immutable'
@@ -93,21 +93,26 @@ function ChartPanel(props: Props) {
     }
     const nodeRef = nodeRefsMap.current.get(key)!
 
+    const widthValue = mapWidth(chartParameters.width, spacing)
+    const widthPercent = `${(widthValue / 12) * 100}%`
+
     return (
       <CSSTransition key={key} timeout={{ enter: 500, exit: 500 }} classNames="example" nodeRef={nodeRef}>
-        <Grid item xs={mapWidth(chartParameters.width, spacing)} ref={nodeRef}>
+        <div style={{ width: widthPercent, padding: '4px', boxSizing: 'border-box' }} ref={nodeRef}>
           <ChartWithTreeNode tree={props.tree} parameters={chartParameters} />
-        </Grid>
+        </div>
       </CSSTransition>
     )
   })
 
   return (
     <div className={props.classes.container}>
-      <TransitionGroup component={Grid} container spacing={1} className="example">
-        {charts}
-        {chartsInView === 0 ? <NoCharts key="noCharts" /> : null}
-      </TransitionGroup>
+      <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+        <TransitionGroup component={null} className="example">
+          {charts}
+        </TransitionGroup>
+      </div>
+      {chartsInView === 0 ? <NoCharts key="noCharts" /> : null}
     </div>
   )
 }
